@@ -68,17 +68,36 @@ export function getDailyData(registrations, dayPlans) {
   }));
 }
 
-export function getChannelStats(channel, registrations) {
+/**
+ * getChannelStats — always derives spend from transactions so it never
+ * diverges from channels[].spend when new transactions are added.
+ * transactions is optional (falls back to channel.spend for legacy calls).
+ */
+export function getChannelStats(channel, registrations, transactions) {
   const regs  = registrations.filter(r => r.channelId === channel.id).length;
   const total = registrations.length;
+  // If transactions are supplied, compute spend from them (single source of truth)
+  const spend = transactions
+    ? transactions.filter(t => t.channelId === channel.id).reduce((s, t) => s + t.amount, 0)
+    : channel.spend;
   return {
     ...channel,
+    spend,
     registrations:  regs,
     ctr:            getCTR(channel.clicks, channel.reach),
     conversionRate: getConversionRate(regs, channel.clicks),
-    cpr:            getCPR(channel.spend, regs),
+    cpr:            getCPR(spend, regs),
     share:          safeDivide(regs, total) * 100,
   };
+}
+
+/**
+ * getChannelSpend — derive a single channel's spend from transactions array.
+ */
+export function getChannelSpend(channelId, transactions) {
+  return transactions
+    .filter(t => t.channelId === channelId)
+    .reduce((s, t) => s + t.amount, 0);
 }
 
 export function getDailyPaceNeeded(registrations, target, daysRemaining) {

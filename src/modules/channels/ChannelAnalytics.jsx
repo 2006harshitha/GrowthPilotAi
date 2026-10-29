@@ -5,7 +5,7 @@ import { useAppStore, useToastCtx } from '../../store/useAppStore.jsx';
 import ChannelForm from './ChannelForm.jsx';
 import Tooltip from '../../components/ui/Tooltip.jsx';
 import Badge from '../../components/ui/Badge.jsx';
-import { getChannelStats, formatCurrency, formatPercent, safeDivide } from '../../data/calculations.js';
+import { getChannelStats, formatCurrency, formatPercent, safeDivide, getTotalSpent } from '../../data/calculations.js';
 
 function MetricWithTooltip({ label, value, tip }) {
   return (
@@ -25,8 +25,8 @@ function MetricWithTooltip({ label, value, tip }) {
   );
 }
 
-function ChannelCard({ channel, registrations, onEdit }) {
-  const stats = getChannelStats(channel, registrations);
+function ChannelCard({ channel, registrations, transactions, onEdit }) {
+  const stats = getChannelStats(channel, registrations, transactions);
 
   const typeColors = {
     community: 'info',
@@ -122,7 +122,7 @@ function ChannelCard({ channel, registrations, onEdit }) {
 export default function ChannelAnalytics() {
   const { state, dispatch } = useAppStore();
   const { addToast }        = useToastCtx();
-  const { channels, registrations } = state;
+  const { channels, registrations, transactions } = state;
   const [formOpen, setFormOpen] = useState(false);
   const [editing,  setEditing]  = useState(null);
 
@@ -140,7 +140,7 @@ export default function ChannelAnalytics() {
 
   const totalReach = channels.reduce((s, c) => s + c.reach, 0);
   const totalClicks = channels.reduce((s, c) => s + c.clicks, 0);
-  const totalSpend = channels.reduce((s, c) => s + c.spend, 0);
+  const totalSpend = getTotalSpent(transactions);
   const totalRegs = registrations.length;
 
   return (
@@ -186,6 +186,7 @@ export default function ChannelAnalytics() {
             key={ch.id}
             channel={ch}
             registrations={registrations}
+            transactions={transactions}
             onEdit={handleEdit}
           />
         ))}

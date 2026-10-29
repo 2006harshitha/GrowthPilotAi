@@ -15,10 +15,13 @@ export function generateRecommendations(state) {
   // ── Per-channel metrics ──────────────────────────────────────────────────────
   const channelStats = channels.map(ch => {
     const regs = registrations.filter(r => r.channelId === ch.id).length;
+    // Derive spend from transactions (single source of truth)
+    const spend = transactions.filter(t => t.channelId === ch.id).reduce((s, t) => s + t.amount, 0);
     return {
       ...ch,
+      spend,
       regs,
-      cpr:  getCPR(ch.spend, regs),
+      cpr:  getCPR(spend, regs),
       conv: getConversionRate(regs, ch.clicks),
     };
   });
