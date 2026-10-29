@@ -1,13 +1,13 @@
 // src/modules/advisor/RecommendationCard.jsx
 import {
   TrendingUp, TrendingDown, AlertTriangle, AlertCircle,
-  Target, FlaskConical, Sparkles, Clock,
+  Target, FlaskConical, Sparkles, Clock, Users,
 } from 'lucide-react';
 import Badge from '../../components/ui/Badge.jsx';
 
 const ICONS = {
   TrendingUp, TrendingDown, AlertTriangle, AlertCircle,
-  Target, FlaskConical, Sparkles, Clock,
+  Target, FlaskConical, Sparkles, Clock, Users,
 };
 
 const PRIORITY_CONFIG = {

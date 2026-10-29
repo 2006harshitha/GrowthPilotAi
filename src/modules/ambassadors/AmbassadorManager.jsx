@@ -271,6 +271,7 @@ export default function AmbassadorManager() {
       {tab === 'registrations' && <RegistrationTable />}
 
       <AmbassadorForm
+        key={editing?.id ?? 'new'}
         isOpen={ambFormOpen}
         onClose={() => setAmbFO(false)}
         ambassador={editing}

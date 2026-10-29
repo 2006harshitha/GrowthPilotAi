@@ -117,21 +117,50 @@ export function generateRecommendations(state) {
           icon: 'FlaskConical',
         });
       }
+    }
+  }
+
+  // Rule 6: Variant B beats Variant A on conversion — consider adopting winner
+  if (experiments && experiments.length > 0) {
+    const exp = experiments[0];
+    if (exp.variants && exp.variants.length === 2) {
+      const varA = exp.variants[0];
+      const varB = exp.variants[1];
       const convA = getConversionRate(varA.registrations, varA.clicks);
       const convB = getConversionRate(varB.registrations, varB.clicks);
-      if (convB > convA * 1.1) {
+      if (convB > convA * 1.1 && varA.registrations >= 30 && varB.registrations >= 30) {
         recs.push({
           id: 'rec-ab-winner',
           priority: 'medium',
-          title: 'Consider Adopting Variant B Messaging',
-          description: `Variant B shows ${(convB - convA).toFixed(1)}pp higher conversion rate (${convB.toFixed(1)}% vs ${convA.toFixed(1)}%). Note: simulated data only.`,
-          action: 'If real data confirms this trend, adopt Variant B messaging across channels',
+          title: `Consider Adopting ${varB.label} Messaging`,
+          description: `${varB.label} conversion rate (${convB.toFixed(1)}%) exceeds ${varA.label} (${convA.toFixed(1)}%) by ${(convB - convA).toFixed(1)}pp. Directional signal — not yet statistically significant. Note: simulated data only.`,
+          action: `If real-world data confirms this trend, roll out ${varB.label} messaging across all channels`,
           metric: 'Conversion Lift',
           value: `+${(convB - convA).toFixed(1)}pp`,
           confidence: 'Medium',
           icon: 'Sparkles',
         });
       }
+    }
+  }
+
+  // Rule 7: Ambassador channel has high volume but highest CPR among paid channels
+  const ambChannel = channelStats.find(c => c.id === 'ch-002');
+  if (ambChannel && channelsWithSpend.length > 1) {
+    const worstCPR = Math.max(...channelsWithSpend.map(c => c.cpr));
+    if (ambChannel.cpr === worstCPR && ambChannel.regs > 50) {
+      recs.push({
+        id: 'rec-ambassador-cpr',
+        priority: 'medium',
+        title: 'Review Ambassador Incentive Cost',
+        description: `Ambassador channel drives ${ambChannel.regs} registrations but has the highest CPR (₹${ambChannel.cpr.toFixed(0)}) among paid channels. High volume but lower cost-efficiency than other paid channels.`,
+        action: 'Review ambassador incentive structure or negotiate lower per-referral costs to improve CPR',
+        metric: 'CPR',
+        value: `₹${ambChannel.cpr.toFixed(0)}`,
+        confidence: 'Medium',
+        icon: 'Users',
+        channelId: ambChannel.id,
+      });
     }
   }
 
